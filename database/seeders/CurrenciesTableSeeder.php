@@ -20,7 +20,7 @@ class CurrenciesTableSeeder extends Seeder
         ];
 
         foreach ($currencies as $currency) {
-            Currency::created([
+            Currency::create([
                 'iso' => $currency,
             ]);
         }
