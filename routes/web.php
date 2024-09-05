@@ -1,14 +1,15 @@
 <?php
 
+use App\Http\Controllers\PaymentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::post('/payments/pay', 'PaymentController@pay')->name('pay');
-Route::get('/payments/approval', 'PaymentController@approval')->name('approval');
-Route::get('/payments/cancelled', 'PaymentController@cancelled')->name('cancelled');
+Route::post('/payments/pay', [PaymentController::class, 'pay'])->name('pay');
+Route::get('/payments/approval', [PaymentController::class, 'approval'])->name('approval');
+Route::get('/payments/cancelled', [PaymentController::class, 'cancelled'])->name('cancelled');
 
 Auth::routes();
 

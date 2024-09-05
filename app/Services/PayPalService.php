@@ -21,7 +21,20 @@ class PayPalService
         $this->clientSecret = config('services.paypal.client_secret');
     }
 
-    public function resolveAuthorization(&$queryParams, &$formParams, &$headers) {}
+    public function resolveAuthorization(&$queryParams, &$formParams, &$headers)
+    {
+        $headers['Authorization'] = $this->resolveAccessToken();
+    }
 
-    public function decodeResponse($response) {}
+    public function decodeResponse($response)
+    {
+        return json_decode($response);
+    }
+
+    public function resolveAccessToken()
+    {
+        $credentials = base64_encode("{$this->clientId}:{$this->clientSecret}");
+
+        return "Basic {$credentials}";
+    }
 }
