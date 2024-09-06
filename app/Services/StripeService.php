@@ -22,14 +22,20 @@ class StripeService
         $this->secret = config('services.stripe.secret');
     }
 
-    public function resolveAuthorization(&$queryParams, &$formParams, &$headers) {}
+    public function resolveAuthorization(&$queryParams, &$formParams, &$headers)
+    {
+        $headers['Authorization'] = $this->resolveAccessToken();
+    }
 
     public function decodeResponse($response)
     {
         return json_decode($response);
     }
 
-    public function resolveAccessToken() {}
+    public function resolveAccessToken()
+    {
+        return "Bearer {$this->secret}";
+    }
 
     public function handlePayment(Request $request) {}
 
