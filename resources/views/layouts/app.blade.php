@@ -95,7 +95,7 @@
                 </div>
                 @endif
 
-                @if(session()->has('success') && $errors->any())
+                @if(session()->has('success'))
                 <div class="alert alert-success">
                     <ul>
                         @foreach (session()->get('success') as $message)
