@@ -61,4 +61,26 @@ class PaymentController extends Controller
             ->route('home')
             ->withErrors('You cancelled the payment');
     }
+
+    public function processing()
+    {
+        if (session()->has('paymentPlatformId') && session()->has('paymentIntentId')) {
+            $paymentPlatform = $this->paymentPlatformResolver
+                ->resolveService(session()->get('paymentPlatformId'));
+
+            $paymentIntentId = session()->get('paymentIntentId');
+
+            $paymentIntent = $paymentPlatform->getPaymentIntent($paymentIntentId);
+
+            if ($paymentIntent->status === 'requires_payment_method') {
+                return redirect()->route('cancelled'); // Failed payment
+            }
+
+            return redirect()->route('approval');
+        }
+
+        return redirect()
+            ->route('home')
+            ->withErrors('We cannot process your payment. Try again please.');
+    }
 }

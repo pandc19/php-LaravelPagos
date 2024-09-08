@@ -45,6 +45,8 @@ class StripeService
 
         $intent = $this->createIntent($request->value, $request->currency, $request->payment_method);
 
+        // dd($intent);
+
         session()->put('paymentIntentId', $intent->id);
         session()->put('paymentMethod', $request->payment_method);
 
@@ -58,6 +60,16 @@ class StripeService
             $paymentMethod = session()->get('paymentMethod');
 
             $confirmation = $this->confirmPayment($paymentIntentId, $paymentMethod);
+
+            // dd($confirmation);
+
+            if ($confirmation->status === 'requires_action') {
+                $clientSecret = $confirmation->client_secret;
+
+                return view('stripe.3d-secure')->with([
+                    'clientSecret' => $clientSecret,
+                ]);
+            }
 
             if ($confirmation->status === 'succeeded') {
                 // $name = $confirmation->charges->data[0]->billing_details->name;
@@ -101,8 +113,16 @@ class StripeService
             [],
             [
                 'payment_method' => $paymentMethod,
-                'return_url' => route('approval'),
+                'return_url' => route('processing'),
             ],
+        );
+    }
+
+    public function getPaymentIntent($paymentIntentId)
+    {
+        return $this->makeRequest(
+            'GET',
+            "/v1/payment_intents/{$paymentIntentId}",
         );
     }
 

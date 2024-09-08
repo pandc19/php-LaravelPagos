@@ -10,6 +10,7 @@ Route::get('/', function () {
 Route::post('/payments/pay', [PaymentController::class, 'pay'])->name('pay');
 Route::get('/payments/approval', [PaymentController::class, 'approval'])->name('approval');
 Route::get('/payments/cancelled', [PaymentController::class, 'cancelled'])->name('cancelled');
+Route::get('/payments/processing', [PaymentController::class, 'processing'])->name('processing');
 
 Auth::routes();
 
