@@ -2,23 +2,23 @@
 
 <div class="form-group form-row">
     <div class="col-4">
-        <input type="text" class="form-control" name="card" placeholder="Card Number">
+        <input type="text" class="form-control" name="payu_card" placeholder="Card Number">
     </div>
 
     <div class="col-2">
-        <input type="text" class="form-control" name="cvc" placeholder="CVC">
+        <input type="text" class="form-control" name="payu_cvc" placeholder="CVC">
     </div>
 
     <div class="col-1">
-        <input type="text" class="form-control" name="month" placeholder="MM">
+        <input type="text" class="form-control" name="payu_month" placeholder="MM">
     </div>
 
     <div class="col-1">
-        <input type="text" class="form-control" name="year" placeholder="YY">
+        <input type="text" class="form-control" name="payu_year" placeholder="YY">
     </div>
 
     <div class="col- 2">
-        <select class="custom-select" name="network">
+        <select class="custom-select" name="payu_network">
             <option selected>Select</option>
             <option value="visa">VISA</option>
             <option value="amex">AMEX</option>
@@ -31,10 +31,10 @@
 
 <div class="form-group form-row">
     <div class="col-5">
-        <input type="text" class="form-control" name="name" placeholder="Your Name">
+        <input type="text" class="form-control" name="payu_name" placeholder="Your Name">
     </div>
     <div class="col-5">
-        <input type="email" class="form-control" placeholder="email@example.com" name="email">
+        <input type="email" class="form-control" placeholder="email@example.com" name="payu_email">
     </div>
 </div>
 

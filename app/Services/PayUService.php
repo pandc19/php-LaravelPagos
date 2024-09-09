@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Traits\ConsumesExternalServices;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class PayUService
 {
@@ -28,49 +29,122 @@ class PayUService
         $this->baseUri = config('services.payu.base_uri');
         $this->key = config('services.payu.key');
         $this->secret = config('services.payu.secret');
-        $this->baseCurrency = config('services.payu.base_currency');
+        $this->baseCurrency = strtoupper(config('services.payu.base_currency'));
         $this->merchantId = config('services.payu.merchant_id');
         $this->accountId = config('services.payu.account_id');
 
         $this->converter = $converter;
     }
 
-    public function resolveAuthorization(&$queryParams, &$formParams, &$headers) {}
+    public function resolveAuthorization(&$queryParams, &$formParams, &$headers)
+    {
+        $formParams['merchant']['apiKey'] = $this->key;
+        $formParams['merchant']['apiLogin'] = $this->secret;
+    }
 
     public function decodeResponse($response)
     {
         return json_decode($response);
     }
 
-    public function handlePayment(Request $request) {}
+    public function handlePayment(Request $request)
+    {
+        $request->validate([
+            'payu_card' => 'required',
+            'payu_cvc' => 'required',
+            'payu_year' => 'required',
+            'payu_month' => 'required',
+            'payu_network' => 'required',
+            'payu_name' => 'required',
+            'payu_email' => 'required',
+        ]);
+
+        $payment = $this->createPayment(
+            $request->value,
+            $request->currency,
+            $request->payu_name,
+            $request->payu_email,
+            $request->payu_card,
+            $request->payu_cvc,
+            $request->payu_year,
+            $request->payu_month,
+            $request->payu_network,
+        );
+
+        if ($payment->transactionResponse->state === 'APPROVED') {
+            $name = $request->payu_name;
+
+            $amount = $request->value;
+            $currency = strtoupper($request->currency);
+
+            return redirect()
+                ->route('home')
+                ->withSuccess(['payment' => "Thanks, {$name}. We received your {$amount}{$currency} payment."]);
+        }
+
+        return redirect()
+            ->route('home')
+            ->withErrors('We were unable to process you payment. Check your details and try again, please.');
+    }
 
     public function handleApproval() {}
 
-    public function createPayment($value, $currency)
+    public function createPayment($value, $currency, $name, $email, $card, $cvc, $year, $month, $network, $installments = 1, $paymenCountry = 'CO')
     {
         return $this->makeRequest(
             'POST',
-            '/v2/checkout/orders',
+            '/payments-api/4.0/service.cgi',
             [],
             [
-                'intent' => 'CAPTURE',
-                'purchase_units' => [
-                    0 => [
-                        'amount' => [
-                            'currency_code' => strtoupper($currency),
-                            'value' => round($value * $factor = $this->resolveFactor($currency)) / $factor,
-                        ]
+                'language' => $language = config('app.locale'),
+                'command' => 'SUBMIT_TRANSACTION',
+                'test' => false,
+                'transaction' => [
+                    'type' => 'AUTHORIZATION_AND_CAPTURE',
+                    'paymentMethod' => strtoupper($network),
+                    'paymentCountry' => strtoupper($paymenCountry),
+                    'deviceSessionId' => session()->getId(),
+                    'ipAddress' => request()->ip(),
+                    'userAgent' => request()->header('User-Agent'),
+                    'creditCard' => [
+                        'number' => $card,
+                        'securityCode' => $cvc,
+                        'expirationDate' => "{$year}/{$month}",
+                        'name' => "APPROVED",
+                    ],
+                    'extraParameters' => [
+                        'INSTALLMENTS_NUMBER' => $installments,
+                    ],
+                    'payer' => [
+                        'fullName' => $name,
+                        'emailAddress' => $email,
+                    ],
+                    'order' => [
+                        'accountId' => $this->accountId,
+                        'referenceCode' => $reference = Str::random(12),
+                        'description' => 'Testing PayU',
+                        'language' => $language,
+                        'signature' => $this->generateSignature($reference, $value = round($value * $this->resolveFactor(($currency)))),
+                        'additionalValues' => [
+                            'TX_VALUE' => [
+                                'value' => $value,
+                                'currency' => $this->baseCurrency,
+                            ],
+                        ],
+                        'buyer' => [
+                            'fullName' => $name,
+                            'emailAddress' => $email,
+                            'shippingAddress' => [
+                                'street1' => '',
+                                'city' => '',
+                            ],
+                        ],
                     ],
                 ],
-                'application_context' => [
-                    'brand_name' => config('app.name'),
-                    'shipping_preference' => 'NO_SHIPPING',
-                    'user_action' => 'PAY_NOW',
-                    'return_url' => route('approval'),
-                    'cancel_url' => route('cancelled'),
-                ],
             ],
-            [],
+            [
+                'Accept' => 'application/json',
+            ],
             $isJsonRequest = true,
         );
     }
@@ -81,5 +155,8 @@ class PayUService
             ->convertCurrency($currency, $this->baseCurrency);
     }
 
-    public function generateSIgnature() {}
+    public function generateSignature($referenceCode, $value)
+    {
+        return md5("{$this->key}~{$this->merchantId}~{$referenceCode}~{$value}~{$this->baseCurrency}");
+    }
 }
