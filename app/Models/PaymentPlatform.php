@@ -15,5 +15,6 @@ class PaymentPlatform extends Model
     protected $fillable = [
         'name',
         'image',
+        'subscriptions_enabled',
     ];
 }
