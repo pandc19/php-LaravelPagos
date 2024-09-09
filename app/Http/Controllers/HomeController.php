@@ -26,7 +26,6 @@ class HomeController extends Controller
     public function index()
     {
         $currencies = Currency::all();
-        // dump($currencies);
         $paymentPlatforms = PaymentPlatform::all();
 
         return view('home')->with([

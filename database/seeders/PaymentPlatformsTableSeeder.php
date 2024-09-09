@@ -22,5 +22,10 @@ class PaymentPlatformsTableSeeder extends Seeder
             'name' => 'Stripe',
             'image' => 'img/payment-platforms/stripe.jpg',
         ]);
+
+        PaymentPlatform::create([
+            'name' => 'PayU',
+            'image' => 'img/payment-platforms/payu.jpg',
+        ]);
     }
 }
