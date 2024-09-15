@@ -32,7 +32,7 @@ class SubscriptionController extends Controller
     {
         $rules = [
             'plan' => ['required', 'exists:plans,slug'],
-            'paymentPlatform' => ['required', 'exists:payment_platforms,id'],
+            'payment_platform' => ['required', 'exists:payment_platforms,id'],
         ];
 
         $request->validate($rules);
@@ -41,7 +41,7 @@ class SubscriptionController extends Controller
 
         session()->put('subscriptionPlatformId', $request->payment_platform);
 
-        return $paymentPlatform->handlPayment($request);
+        return $paymentPlatform->handleSubscription($request);
     }
 
     public function approval() {}

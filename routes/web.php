@@ -22,7 +22,7 @@ Route::prefix('subscribe')
     ->group(function () {
         Route::get('/', [SubscriptionController::class, 'show'])->name('show');
 
-        Route::get('/store', [SubscriptionController::class, 'store'])->name('store');
+        Route::post('/store', [SubscriptionController::class, 'store'])->name('store');
 
         Route::get('/approval', [SubscriptionController::class, 'approval'])->name('approval');
 
