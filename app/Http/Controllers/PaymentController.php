@@ -34,6 +34,10 @@ class PaymentController extends Controller
 
         session()->put('paymentPlatformId', $request->payment_platform);
 
+        if ($request->user()->hasActiveSubscription()) {
+            $request->value = round($request->value * 0.9, 2);
+        }
+
         // $paymentPlatform = resolve(PayPalService::class);
 
         return $paymentPlatform->handlePayment($request);

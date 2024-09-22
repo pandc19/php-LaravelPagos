@@ -17,6 +17,13 @@ class Subscription extends Model
         'active_until',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'active_until' => 'datetime',
+        ];
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
