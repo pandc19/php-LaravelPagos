@@ -118,6 +118,24 @@ class StripeService
                 ],
             );
         }
+
+        $paymentIntent = $subscription->latest_invoice->payment_intent;
+
+        if ($paymentIntent->status === 'requires_action') {
+            $clientSecret = $paymentIntent->client_secret;
+
+            session()->put('subscriptionId', $subscription->id);
+
+            return view('stripe.3d-secure-subscription')->with([
+                'clientSecret' => $clientSecret,
+                'plan' => $request->plan,
+                'paymentMethod' => $request->payment_method,
+                'subscriptionId' => $subscription->id,
+            ]);
+        }
+
+        return redirect()->route('subscribe.show')
+            ->withErrors('We were unable to activate your subscription. Try again, please.');
     }
 
     public function validateSubscription(Request $request)
@@ -195,6 +213,7 @@ class StripeService
                     ['price' => $priceId],
                 ],
                 'default_payment_method' => $paymentMethod,
+                'expand' => ['latest_invoice.payment_intent'],
             ],
         );
     }
